@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>사대 자세 노트</title>
+<meta name="description" content="잘 맞던 때와 지금의 국궁 만작 자세를 사진 위 점 9개로 비교합니다. 영상과 사진은 내 기기 밖으로 나가지 않습니다.">
+<meta property="og:title" content="사대 자세 노트">
+<meta property="og:description" content="국궁 만작 자세 비교 도구 · 잘 맞던 때와 지금을 숫자로 비교">
+<meta property="og:type" content="website">
+<!-- 인터넷이 연결되어 있으면 글꼴을 불러오고, 없으면 시스템 글꼴로 동작합니다 -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@700&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+:root{
+  --bg:#f3f5f7; --surface:#ffffff; --ink:#1b2430; --muted:#5d6b7a; --line:#d5dce3;
+  --hongsim:#c8332b; --bow:#e0a21a; --draw:#16a394; --shoulder:#d9473d; --head:#7c5cd6;
+  --ok:#2f8a57; --warn:#c8332b; --chip:#eef1f4; color-scheme:light;
+  --f-display:"Gowun Batang","Nanum Myeongjo","AppleMyungjo",serif;
+  --f-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
+  --f-num:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#121820; --surface:#1a222c; --ink:#e6ebf0; --muted:#97a4b2; --line:#2c3743;
+  --hongsim:#ff6b5f; --ok:#5cc58a; --warn:#ff6b5f; --chip:#232d38; color-scheme:dark}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.6}
+img{max-width:100%}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 16px 64px;display:grid;gap:28px}
+h1{font-family:var(--f-display);font-size:clamp(28px,4vw,40px);line-height:1.15;margin:0}
+h2{font-family:var(--f-display);font-size:22px;margin:0 0 4px}
+.eyebrow{font-size:12px;letter-spacing:.12em;color:var(--hongsim);font-weight:600}
+.lede{color:var(--muted);max-width:70ch;margin:6px 0 0}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:0;padding:0;list-style:none;counter-reset:s}
+.steps li{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;counter-increment:s;font-size:14px;color:var(--muted)}
+.steps li::before{content:counter(s);display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--hongsim);color:#fff;font-size:12px;font-weight:600;margin-right:8px}
+.steps li b{color:var(--ink)}
+.verdict{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.vcard{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:grid;gap:4px;min-width:0}
+.vcard span{color:var(--muted);font-size:13.5px}
+.vcard .delta{font-family:var(--f-num);font-size:20px;color:var(--warn)}
+.vcard.same .delta{color:var(--ok)}
+.panels{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden;min-width:0;display:flex;flex-direction:column}
+.panel header{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.panel header strong{font-family:var(--f-display);font-size:17px;overflow-wrap:anywhere}
+.tag{font-size:12px;padding:2px 8px;border-radius:99px;background:var(--chip);color:var(--muted)}
+.tag.ref{background:var(--hongsim);color:#fff}
+.stage{position:relative;line-height:0;touch-action:none;user-select:none;-webkit-user-select:none}
+.stage img{width:100%;display:block}
+.stage svg{position:absolute;inset:0;width:100%;height:100%}
+.stage svg .pt{cursor:grab}
+.stage.picking{cursor:crosshair}
+.empty{display:grid;place-items:center;text-align:center;min-height:260px;padding:24px;color:var(--muted);font-size:14px;line-height:1.6;background:repeating-linear-gradient(45deg,var(--chip) 0 10px,transparent 10px 20px)}
+.hint{padding:8px 14px;font-size:13px;color:var(--muted);border-top:1px solid var(--line)}
+.hint.active{color:var(--hongsim);font-weight:600}
+.pbar{display:flex;flex-wrap:wrap;gap:6px;padding:8px 14px;border-top:1px solid var(--line);margin-top:auto}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--muted)}
+.legend i{display:inline-block;width:14px;height:4px;border-radius:2px;margin-right:6px;vertical-align:middle}
+.tablewrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;min-width:640px}
+th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;letter-spacing:.06em;color:var(--muted);font-weight:600;background:var(--chip)}
+td.num{font-family:var(--f-num);font-variant-numeric:tabular-nums;white-space:nowrap}
+td .why{display:block;color:var(--muted);font-size:13px}
+.pill{display:inline-block;font-size:12px;font-weight:600;padding:2px 9px;border-radius:99px;white-space:nowrap}
+.pill.same{background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--ok)}
+.pill.diff{background:color-mix(in srgb,var(--warn) 16%,transparent);color:var(--warn)}
+tr:last-child td{border-bottom:none}
+.timing{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.bar{display:grid;gap:6px}
+.bar .row{display:grid;grid-template-columns:44px 1fr 64px;align-items:center;gap:10px;font-size:13.5px}
+.bar .track{height:12px;background:var(--chip);border-radius:6px;overflow:hidden}
+.bar .fill{height:100%;background:var(--muted);border-radius:6px}
+.bar .fill.ref{background:var(--hongsim)}
+.bar .v{font-family:var(--f-num);text-align:right}
+.bench{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:12px}
+.bench video{width:100%;max-height:460px;background:#000;border-radius:8px}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button,.filebtn,select{font:inherit;font-size:14px;padding:8px 14px;border-radius:8px;border:1px solid var(--line);background:var(--chip);color:var(--ink);cursor:pointer;position:relative}
+.pbar button,.pbar .filebtn{font-size:13px;padding:5px 10px}
+button.primary,.filebtn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible,.filebtn:focus-within,select:focus-visible{outline:2px solid var(--hongsim);outline-offset:2px}
+.filebtn input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:0}
+.nojs{background:var(--hongsim);color:#fff;padding:14px 16px;border-radius:10px;font-size:14.5px;line-height:1.6}
+.status{font-size:13px;color:var(--hongsim);min-height:0}
+.small{font-size:13px;color:var(--muted)}
+.notes{color:var(--muted);font-size:13.5px;display:grid;gap:6px;max-width:80ch}
+.notes p{margin:0}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 16px;border-radius:8px;font-size:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="nojs" id="nojs"><b>지금 화면은 ‘미리보기’라서 버튼이 동작하지 않습니다.</b><br>카카오톡·드롭박스·파일 앱의 미리보기에서는 사진 올리기와 점 찍기가 막혀 있습니다. 파일을 휴대폰에 저장한 뒤 <b>Safari나 Chrome으로 열기</b>를 선택하거나, 컴퓨터 브라우저에서 열어 주세요.</div>
+  <section>
+    <div class="eyebrow">국궁 · 만작 자세 비교</div>
+    <h1>사대 자세 노트</h1>
+    <p class="lede">잘 맞던 때의 만작 자세를 기준으로, 지금 자세가 어디서 달라졌는지 숫자로 비교합니다. 영상과 사진은 이 컴퓨터의 브라우저 안에서만 열리고 인터넷으로 보내지지 않습니다.</p>
+  </section>
+
+  <ol class="steps">
+    <li><b>같은 자리에서 촬영</b> 사대 옆, 가슴 정면 쪽에서 같은 높이로 찍은 두 영상을 준비합니다. 사대 앞에는 서지 마세요.</li>
+    <li><b>장면 가져오기</b> 영상을 열고 만작 순간에 멈춘 뒤 ‘기준으로’ 또는 ‘현재로’를 누릅니다.</li>
+    <li><b>점 9개 찍기</b> 사진 아래 안내 순서대로 찍고, 잘못 찍은 점은 끌어서 고칩니다.</li>
+    <li><b>리듬 기록 (선택)</b> 영상을 재생하며 만작 시작, 발시, 줌손 내려감 버튼을 누릅니다.</li>
+  </ol>
+
+  <section class="bench" aria-labelledby="bench-h">
+    <h2 id="bench-h">영상에서 장면 가져오기</h2>
+    <div class="controls">
+      <label class="filebtn primary">영상 열기<input type="file" id="file" accept="video/*"></label>
+      <span class="small" id="fname">열린 영상 없음</span>
+    </div>
+    <video id="video" controls playsinline hidden></video>
+    <div class="controls" id="vctrl" hidden>
+      <button id="back" type="button">◀ 1프레임</button><button id="fwd" type="button">1프레임 ▶</button>
+      <span class="small" id="tnow">0.00초</span>
+    </div>
+    <div class="controls" id="capctrl" hidden>
+      <button class="primary" id="cap-ref" type="button">이 장면을 기준으로</button>
+      <button class="primary" id="cap-now" type="button">이 장면을 현재로</button>
+    </div>
+    <div class="controls" id="timectrl" hidden>
+      <label class="small" for="tslot">리듬 기록 대상</label>
+      <select id="tslot"><option value="now">현재</option><option value="ref">기준</option></select>
+      <button id="m-full" type="button">만작 시작</button><button id="m-rel" type="button">발시</button><button id="m-drop" type="button">줌손 내려감</button>
+      <span class="small" id="tlog"></span>
+    </div>
+  </section>
+
+  <section class="verdict" id="verdict" aria-label="요약"></section>
+
+  <section style="display:grid;gap:10px">
+    <div class="legend">
+      <span><i style="background:var(--bow)"></i>줌팔</span>
+      <span><i style="background:var(--draw)"></i>깍지팔</span>
+      <span><i style="background:var(--shoulder)"></i>어깨선</span>
+      <span><i style="background:var(--head)"></i>머리(귀·코·턱)</span>
+      <span><i style="background:#9aa5b1"></i>수평 기준선</span>
+    </div>
+    <div class="panels">
+      <article class="panel" id="panel-ref">
+        <header><strong id="title-ref">기준</strong><span class="tag ref">기준 · 잘 맞던 때</span></header>
+        <div class="stage" id="stage-ref"><img id="img-ref" alt="기준 만작 자세" hidden><svg id="svg-ref"></svg><div class="empty" id="empty-ref">아직 사진이 없습니다.<br>위에서 영상을 열어 ‘이 장면을 기준으로’를 누르거나<br>아래 ‘사진 열기’로 만작 사진을 불러오세요.</div></div>
+        <div class="hint" id="hint-ref"></div>
+        <div class="pbar">
+          <label class="filebtn">사진 열기<input type="file" accept="image/*" data-slot="ref" class="imgfile"></label>
+          <button type="button" data-redo="ref">점 다시 찍기</button>
+          <span class="status" id="status-ref" role="status"></span>
+        </div>
+      </article>
+      <article class="panel" id="panel-now">
+        <header><strong id="title-now">현재</strong><span class="tag">현재</span></header>
+        <div class="stage" id="stage-now"><img id="img-now" alt="현재 만작 자세" hidden><svg id="svg-now"></svg><div class="empty" id="empty-now">아직 사진이 없습니다.<br>위에서 영상을 열어 ‘이 장면을 현재로’를 누르거나<br>아래 ‘사진 열기’로 만작 사진을 불러오세요.</div></div>
+        <div class="hint" id="hint-now"></div>
+        <div class="pbar">
+          <label class="filebtn">사진 열기<input type="file" accept="image/*" data-slot="now" class="imgfile"></label>
+          <button type="button" data-redo="now">점 다시 찍기</button>
+          <span class="status" id="status-now" role="status"></span>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section style="display:grid;gap:10px">
+    <h2>체크 포인트</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>항목</th><th>기준</th><th>현재</th><th>차이</th><th>판정</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <p class="small">길이 단위 “머리”는 귀에서 코끝까지의 거리입니다. 사진마다 촬영 거리가 달라도 비교할 수 있게 이 길이로 나눴습니다.</p>
+  </section>
+
+  <section style="display:grid;gap:10px">
+    <h2>리듬</h2>
+    <div class="timing" id="timing"></div>
+  </section>
+
+  <section class="bench">
+    <h2>기록 저장과 불러오기</h2>
+    <p class="small" style="margin:0">사진과 점, 리듬 기록을 파일 하나로 저장합니다. 잘 맞던 날의 기록을 저장해 두면 다음에 ‘기록 불러오기’로 기준을 바로 다시 쓸 수 있습니다.</p>
+    <div class="controls">
+      <button type="button" id="save-all" class="primary">두 장면 모두 저장</button>
+      <button type="button" id="save-ref">기준만 저장</button>
+      <label class="filebtn">기록 불러오기<input type="file" id="load" accept=".json,application/json"></label>
+      <button type="button" id="save-img">비교 사진 저장 (PNG)</button>
+    </div>
+  </section>
+
+  <section class="notes">
+    <h2>측정의 한계</h2>
+    <p>카메라 한 대로 찍은 2D 사진이라 촬영 위치와 높이가 같아야 숫자를 비교할 수 있습니다.</p>
+    <p>시위와 화살은 점으로 찍지 않으므로 시위와 볼·팔 사이의 실제 간격은 재지 않습니다. 사진을 눈으로 함께 보세요.</p>
+    <p>판정 기준(허용 오차)은 손으로 점을 찍을 때 생기는 흔들림을 감안해 정한 값입니다. ‘달라짐’은 원인 후보를 짚어주는 것이지 잘잘못을 판정하는 것은 아닙니다. 지도자의 확인을 함께 받으세요.</p>
+    <p>오른손잡이(왼손에 활) 기준으로 설명이 쓰여 있습니다. 왼손잡이도 점은 같은 이름대로 찍으면 계산은 그대로 맞습니다.</p>
+  </section>
+</div>
+
+<script>
+"use strict";
+document.getElementById("nojs").hidden=true;
+const KEYS = [
+  ["nose","코끝","head"],["chin","턱끝","head"],["ear","귀 (깍지손 쪽)","head"],
+  ["dHand","깍지손 (엄지)","draw"],["dElbow","깍지팔 팔꿈치","draw"],["dSh","깍지팔 어깨","shoulder"],
+  ["bSh","줌팔 어깨","shoulder"],["bElbow","줌팔 팔꿈치","bow"],["bHand","줌손 (줌통)","bow"]
+];
+const blank = () => ({img:null,label:"",pts:{},time:{hold:null,follow:null}});
+const S = {ref:{...blank(),label:"기준"}, now:{...blank(),label:"현재"}};
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const $ = id => document.getElementById(id);
+
+/* ---------- metrics ---------- */
+const deg = r => r*180/Math.PI;
+function M(slot){
+  const s=S[slot], im=$("img-"+slot);
+  if(!s.img||!im.naturalWidth) return null;
+  const W=im.naturalWidth, H=im.naturalHeight, p={};
+  for(const [k] of KEYS){ if(!s.pts[k]) return null; p[k]=[s.pts[k][0]*W,s.pts[k][1]*H]; }
+  const U=Math.hypot(p.ear[0]-p.nose[0],p.ear[1]-p.nose[1])||1;
+  const ang=(a,b)=>deg(Math.atan2(a[1]-b[1],Math.abs(b[0]-a[0])));
+  const v1=[p.bSh[0]-p.bElbow[0],p.bSh[1]-p.bElbow[1]], v2=[p.bHand[0]-p.bElbow[0],p.bHand[1]-p.bElbow[1]];
+  const elbow=deg(Math.acos(Math.max(-1,Math.min(1,(v1[0]*v2[0]+v1[1]*v2[1])/((Math.hypot(...v1)*Math.hypot(...v2))||1)))));
+  return {
+    bowArm: ang(p.bSh,p.bHand), shoulderTilt: ang(p.dSh,p.bSh),
+    neck: (p.bSh[1]-p.chin[1])/U, anchorChin: (p.dHand[1]-p.chin[1])/U,
+    anchorEar: Math.hypot(p.dHand[0]-p.ear[0],p.dHand[1]-p.ear[1])/U,
+    arrow: ang(p.dHand,p.bHand), bowElbow: elbow, drawElbow: (p.dElbow[1]-p.dSh[1])/U
+  };
+}
+const ROWS = [
+  {k:"bowArm",name:"줌팔 각도",unit:"°",tol:3,fmt:1,why:"줌팔 어깨에서 줌손까지 선이 수평보다 몇 도 올라갔는지",up:"줌팔이 더 들렸습니다",down:"줌팔이 더 내려갔습니다"},
+  {k:"shoulderTilt",name:"어깨선 기울기",unit:"°",tol:2,fmt:1,why:"양 어깨를 이은 선. +면 줌팔 어깨가 더 높음",up:"줌팔 어깨가 솟았습니다",down:"줌팔 어깨가 내려갔습니다"},
+  {k:"neck",name:"턱–줌팔 어깨 높이",unit:" 머리",tol:.06,fmt:2,why:"턱끝보다 줌팔 어깨가 얼마나 아래에 있는지. 줄면 어깨가 귀 쪽으로 올라붙은 것",up:"목 여유가 늘었습니다",down:"어깨가 턱 쪽으로 올라붙었습니다"},
+  {k:"anchorChin",name:"깍지손 높이 (턱 기준)",unit:" 머리",tol:.08,fmt:2,why:"깍지손이 턱끝보다 얼마나 아래에 있는지",up:"깍지손이 더 내려갔습니다",down:"깍지손이 턱 쪽으로 올라왔습니다"},
+  {k:"anchorEar",name:"깍지손–귀 거리",unit:" 머리",tol:.08,fmt:2,why:"깍지손이 얼굴에 얼마나 붙어 있는지. 줄면 시위가 볼에 가까워짐",up:"깍지손이 얼굴에서 멀어졌습니다",down:"깍지손이 얼굴에 더 붙었습니다"},
+  {k:"arrow",name:"화살 각도",unit:"°",tol:2,fmt:1,why:"깍지손에서 줌손까지 선의 기울기. 겨냥 높이와 관련",up:"화살을 더 높이 겨누고 있습니다",down:"화살을 더 낮게 겨누고 있습니다"},
+  {k:"bowElbow",name:"줌팔 팔꿈치 펴짐",unit:"°",tol:10,fmt:0,why:"180°면 일직선. 소매에 가려 오차가 큰 항목",up:"줌팔이 더 펴졌습니다",down:"줌팔이 더 굽었습니다"},
+  {k:"drawElbow",name:"깍지팔 팔꿈치 높이",unit:" 머리",tol:.1,fmt:2,why:"깍지팔 팔꿈치가 어깨보다 얼마나 아래에 있는지",up:"깍지팔 팔꿈치가 처졌습니다",down:"깍지팔 팔꿈치가 올라갔습니다"}
+];
+
+function render(){
+  const a=M("ref"), b=M("now"), tb=$("tbody"); tb.innerHTML="";
+  const diffs=[];
+  for(const r of ROWS){
+    const va=a?a[r.k]:null, vb=b?b[r.k]:null; let d=null, cls="", verdict="";
+    if(va!=null&&vb!=null){ d=vb-va; const same=Math.abs(d)<=r.tol; cls=same?"same":"diff"; verdict=same?"":(d>0?r.up:r.down); if(!same) diffs.push({r,d,verdict}); }
+    const f=v=>v==null?"–":v.toFixed(r.fmt)+r.unit;
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td><b>${r.name}</b><span class="why">${r.why}</span></td><td class="num">${f(va)}</td><td class="num">${f(vb)}</td>
+      <td class="num">${d==null?"–":(d>0?"+":"")+d.toFixed(r.fmt)+r.unit}</td>
+      <td>${d==null?'<span class="why">두 사진에 점을 모두 찍으면 계산됩니다</span>':`<span class="pill ${cls}">${cls==="same"?"비슷함":"달라짐"}</span><span class="why">${verdict}</span>`}</td>`;
+    tb.appendChild(tr);
+  }
+  const v=$("verdict"); v.innerHTML="";
+  if(!a||!b){ v.innerHTML=`<div class="vcard"><b>두 장면에 점 9개씩 찍으면 요약이 나옵니다</b><span>기준: ${progress("ref")} · 현재: ${progress("now")}</span></div>`; }
+  else{
+    const top=diffs.sort((x,y)=>Math.abs(y.d)/y.r.tol-Math.abs(x.d)/x.r.tol).slice(0,4);
+    if(!top.length) v.innerHTML=`<div class="vcard same"><span class="delta">차이 없음</span><b>모든 항목이 기준과 비슷합니다</b><span>자세보다 장비(시위, 현고)나 리듬을 살펴보세요.</span></div>`;
+    for(const t of top){ const c=document.createElement("div"); c.className="vcard";
+      c.innerHTML=`<span class="delta">${t.d>0?"+":""}${t.d.toFixed(t.r.fmt)}${t.r.unit}</span><b>${t.verdict}</b><span>${t.r.name}</span>`; v.appendChild(c); }
+  }
+  renderTiming();
+}
+const progress = slot => !S[slot].img ? "사진 없음" : `${Object.keys(S[slot].pts).length}/9`;
+function renderTiming(){
+  const el=$("timing"); el.innerHTML="";
+  for(const [k,name,desc,max] of [["hold","만작 유지","다 당긴 뒤 놓기까지",12],["follow","잔신","놓은 뒤 줌손을 유지한 시간",4]]){
+    const row=(lab,v,ref)=>`<div class="row"><span>${lab}</span><div class="track"><div class="fill${ref?" ref":""}" style="width:${v==null?0:Math.min(100,v/max*100)}%"></div></div><span class="v">${v==null?"–":v.toFixed(1)+"초"}</span></div>`;
+    const box=document.createElement("div"); box.className="vcard";
+    box.innerHTML=`<b>${name}</b><span>${desc}</span><div class="bar">${row("기준",S.ref.time[k],true)}${row("현재",S.now.time[k],false)}</div>`;
+    el.appendChild(box);
+  }
+}
+
+/* ---------- drawing & editing ---------- */
+const NS="http://www.w3.org/2000/svg";
+const picking={ref:null,now:null};
+function nextMissing(slot){ const i=KEYS.findIndex(([k])=>!S[slot].pts[k]); return i<0?null:i; }
+function colorOf(grp){ return css(grp==="bow"?"--bow":grp==="draw"?"--draw":grp==="shoulder"?"--shoulder":"--head"); }
+function draw(slot){
+  const s=S[slot], im=$("img-"+slot), svg=$("svg-"+slot);
+  svg.innerHTML=""; if(!s.img||!im.naturalWidth) return;
+  const W=im.naturalWidth, H=im.naturalHeight; svg.setAttribute("viewBox",`0 0 ${W} ${H}`);
+  const sw=Math.max(3,W/220), r=Math.max(7,W/90);
+  const P=k=>s.pts[k]?[s.pts[k][0]*W,s.pts[k][1]*H]:null;
+  const ln=(A,B,c,dash,w)=>{ if(!A||!B) return; const l=document.createElementNS(NS,"line");
+    l.setAttribute("x1",A[0]);l.setAttribute("y1",A[1]);l.setAttribute("x2",B[0]);l.setAttribute("y2",B[1]);
+    l.setAttribute("stroke",c);l.setAttribute("stroke-width",w||sw);l.setAttribute("stroke-linecap","round"); if(dash) l.setAttribute("stroke-dasharray",dash); svg.appendChild(l); };
+  const bs=P("bSh"); if(bs) ln(bs,[W,bs[1]],"#9aa5b1",`${sw*3} ${sw*2}`,sw*.6);
+  ln(P("bSh"),P("bElbow"),css("--bow")); ln(P("bElbow"),P("bHand"),css("--bow"));
+  ln(P("dSh"),P("dElbow"),css("--draw")); ln(P("dElbow"),P("dHand"),css("--draw"));
+  ln(P("dSh"),P("bSh"),css("--shoulder"));
+  ln(P("ear"),P("nose"),css("--head"),`${sw*2} ${sw*1.5}`); ln(P("nose"),P("chin"),css("--head"),`${sw*2} ${sw*1.5}`);
+  ln(P("dHand"),P("bHand"),"rgba(255,255,255,.6)",`${sw} ${sw*2}`);
+  for(const [k,label,grp] of KEYS){ const p=P(k); if(!p) continue;
+    const c=document.createElementNS(NS,"circle"); c.setAttribute("cx",p[0]);c.setAttribute("cy",p[1]);c.setAttribute("r",r);
+    c.setAttribute("fill",colorOf(grp)); c.setAttribute("stroke","#fff"); c.setAttribute("stroke-width",sw*.7);
+    c.classList.add("pt"); c.dataset.k=k; const t=document.createElementNS(NS,"title"); t.textContent=label; c.appendChild(t); svg.appendChild(c); }
+}
+function svgPoint(svg,e){ const pt=svg.createSVGPoint(); pt.x=e.clientX; pt.y=e.clientY; return pt.matrixTransform(svg.getScreenCTM().inverse()); }
+function hint(slot){ const h=$("hint-"+slot);
+  if(!S[slot].img){ h.className="hint"; h.textContent=""; return; }
+  if(picking[slot]!=null){ h.className="hint active"; h.textContent=`${picking[slot]+1}/9 · ${KEYS[picking[slot]][1]}을(를) 찍으세요`; }
+  else { h.className="hint"; h.textContent="점 9개를 모두 찍었습니다. 점을 끌어서 위치를 고칠 수 있습니다."; } }
+function bind(slot){
+  const svg=$("svg-"+slot), im=$("img-"+slot), stage=$("stage-"+slot); let drag=null;
+  svg.addEventListener("pointerdown",e=>{
+    if(!S[slot].img) return;
+    const k=e.target.dataset&&e.target.dataset.k;
+    if(k){ drag=k; svg.setPointerCapture(e.pointerId); e.preventDefault(); return; }
+    if(picking[slot]!=null){ const q=svgPoint(svg,e);
+      S[slot].pts[KEYS[picking[slot]][0]]=[q.x/im.naturalWidth,q.y/im.naturalHeight];
+      picking[slot]=nextMissing(slot); stage.classList.toggle("picking",picking[slot]!=null);
+      hint(slot); draw(slot); render(); }
+  });
+  svg.addEventListener("pointermove",e=>{ if(!drag) return; const q=svgPoint(svg,e);
+    S[slot].pts[drag]=[Math.max(0,Math.min(1,q.x/im.naturalWidth)),Math.max(0,Math.min(1,q.y/im.naturalHeight))]; draw(slot); render(); });
+  const end=()=>{drag=null}; svg.addEventListener("pointerup",end); svg.addEventListener("pointercancel",end);
+  im.addEventListener("load",()=>{ draw(slot); render(); });
+}
+function setImage(slot,dataUrl,label,pts){
+  S[slot].img=dataUrl; S[slot].label=label; S[slot].pts=pts||{};
+  $("title-"+slot).textContent=label; $("empty-"+slot).hidden=true;
+  const im=$("img-"+slot); im.hidden=false; im.src=dataUrl;
+  picking[slot]=nextMissing(slot); $("stage-"+slot).classList.toggle("picking",picking[slot]!=null); hint(slot);
+}
+for(const slot of ["ref","now"]){ bind(slot); hint(slot); }
+render();
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>{draw("ref");draw("now");});
+
+/* ---------- video ---------- */
+const video=$("video"), fps=30, marks={};
+$("file").addEventListener("change",e=>{
+  const f=e.target.files[0]; if(!f) return;
+  video.src=URL.createObjectURL(f); video.hidden=false;
+  for(const id of ["vctrl","capctrl","timectrl"]) $(id).hidden=false;
+  $("fname").textContent=f.name; for(const k in marks) delete marks[k]; $("tlog").textContent="";
+});
+video.addEventListener("timeupdate",()=>{$("tnow").textContent=video.currentTime.toFixed(2)+"초"});
+video.addEventListener("error",()=>toast("이 영상 형식은 브라우저에서 열 수 없습니다. MP4로 바꾸거나 Chrome·Safari에서 열어 보세요."));
+$("back").onclick=()=>{video.pause();video.currentTime=Math.max(0,video.currentTime-1/fps)};
+$("fwd").onclick=()=>{video.pause();video.currentTime=video.currentTime+1/fps};
+function frameToDataURL(src,w,h){ const sc=Math.min(1,1400/w), c=document.createElement("canvas");
+  c.width=Math.round(w*sc); c.height=Math.round(h*sc); c.getContext("2d").drawImage(src,0,0,c.width,c.height); return c.toDataURL("image/jpeg",.85); }
+function capture(slot){
+  if(!video.videoWidth){ toast("영상이 아직 준비되지 않았습니다."); return; }
+  video.pause();
+  setImage(slot, frameToDataURL(video,video.videoWidth,video.videoHeight), `${$("fname").textContent} · ${video.currentTime.toFixed(1)}초`);
+  $("panel-"+slot).scrollIntoView({behavior:"smooth",block:"start"});
+}
+$("cap-ref").onclick=()=>capture("ref");
+$("cap-now").onclick=()=>capture("now");
+function mark(kind){
+  const slot=$("tslot").value; const m=marks[slot]=marks[slot]||{}; m[kind]=video.currentTime;
+  if(m.full!=null&&m.rel!=null) S[slot].time.hold=Math.max(0,m.rel-m.full);
+  if(m.rel!=null&&m.drop!=null) S[slot].time.follow=Math.max(0,m.drop-m.rel);
+  $("tlog").textContent=`${slot==="ref"?"기준":"현재"}: `+[["full","만작"],["rel","발시"],["drop","내려감"]].map(([k,n])=>n+" "+(m[k]!=null?m[k].toFixed(2)+"초":"–")).join(" · ");
+  renderTiming();
+}
+$("m-full").onclick=()=>mark("full"); $("m-rel").onclick=()=>mark("rel"); $("m-drop").onclick=()=>mark("drop");
+
+/* ---------- photos ---------- */
+function loadImg(blob){ return new Promise((res,rej)=>{ const u=URL.createObjectURL(blob), i=new Image();
+  i.onload=()=>res({src:i,w:i.naturalWidth,h:i.naturalHeight,done:()=>URL.revokeObjectURL(u)}); i.onerror=()=>{URL.revokeObjectURL(u);rej();}; i.src=u; }); }
+function loadScript(src){ return new Promise((res,rej)=>{ const sc=document.createElement("script"); sc.src=src; sc.onload=res; sc.onerror=rej; document.head.appendChild(sc); }); }
+async function decodePhoto(f,say){
+  try{ return await loadImg(f); }catch(e){}
+  if(window.createImageBitmap){ try{ const b=await createImageBitmap(f); return {src:b,w:b.width,h:b.height,done:()=>b.close&&b.close()}; }catch(e){} }
+  const heic=/\.(heic|heif)$/i.test(f.name)||/hei[cf]/i.test(f.type);
+  if(heic){
+    say("아이폰 HEIC 사진을 변환하는 중… (인터넷 연결 필요)");
+    try{ if(!window.heic2any) await loadScript("https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js");
+         let out=await window.heic2any({blob:f,toType:"image/jpeg",quality:.9}); if(Array.isArray(out)) out=out[0]; return await loadImg(out); }
+    catch(e){ throw new Error("HEIC 사진을 변환하지 못했습니다. 인터넷 연결을 확인하거나, 사진을 JPG로 내보낸 뒤 다시 올려 주세요."); }
+  }
+  throw new Error("이 사진 형식("+(f.type||f.name.split(".").pop())+")은 열 수 없습니다. JPG나 PNG로 바꿔 주세요.");
+}
+document.querySelectorAll(".imgfile").forEach(inp=>inp.addEventListener("change",async()=>{
+  const f=inp.files&&inp.files[0], slot=inp.dataset.slot, st=$("status-"+slot); inp.value="";
+  if(!f){ st.textContent="사진이 선택되지 않았습니다."; return; }
+  const say=m=>{ st.textContent=m; }; say("사진을 읽는 중…");
+  try{ const d=await decodePhoto(f,say);
+       setImage(slot, frameToDataURL(d.src,d.w,d.h), f.name); d.done(); say("");
+       $("panel-"+slot).scrollIntoView({behavior:"smooth",block:"start"}); }
+  catch(e){ say(e.message||"사진을 열지 못했습니다."); toast(e.message||"사진을 열지 못했습니다."); }
+}));
+document.querySelectorAll("[data-redo]").forEach(b=>b.addEventListener("click",()=>{
+  const slot=b.dataset.redo; if(!S[slot].img){ toast("먼저 사진을 불러오세요."); return; }
+  S[slot].pts={}; picking[slot]=0; $("stage-"+slot).classList.add("picking"); hint(slot); draw(slot); render();
+}));
+
+/* ---------- save / load ---------- */
+function download(name,blob){ const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1000); }
+const stamp=()=>new Date().toISOString().slice(0,10);
+function saveJSON(slots){
+  const out={app:"사대 자세 노트",version:1,saved:new Date().toISOString(),slots:{}};
+  for(const s of slots){ if(S[s].img) out.slots[s]={label:S[s].label,img:S[s].img,pts:S[s].pts,time:S[s].time}; }
+  if(!Object.keys(out.slots).length){ toast("저장할 장면이 없습니다."); return; }
+  download(`자세기록_${slots.length===1?"기준_":""}${stamp()}.json`, new Blob([JSON.stringify(out)],{type:"application/json"}));
+  toast("기록을 저장했습니다.");
+}
+$("save-all").onclick=()=>saveJSON(["ref","now"]);
+$("save-ref").onclick=()=>saveJSON(["ref"]);
+$("load").addEventListener("change",e=>{
+  const f=e.target.files[0]; if(!f) return;
+  f.text().then(t=>{ const d=JSON.parse(t); if(!d.slots) throw 0;
+    for(const s of ["ref","now"]){ const v=d.slots[s]; if(!v) continue; setImage(s,v.img,v.label,v.pts); S[s].time=v.time||{hold:null,follow:null}; }
+    renderTiming(); toast("기록을 불러왔습니다.");
+  }).catch(()=>toast("이 파일은 사대 자세 노트 기록이 아닙니다."));
+  e.target.value="";
+});
+$("save-img").onclick=()=>{
+  const ims=["ref","now"].filter(s=>S[s].img);
+  if(!ims.length){ toast("저장할 사진이 없습니다."); return; }
+  const H=700, parts=ims.map(s=>{ const im=$("img-"+s); return {s,im,w:Math.round(im.naturalWidth*H/im.naturalHeight)}; });
+  const c=document.createElement("canvas"); c.width=parts.reduce((a,p)=>a+p.w,0)+20*(parts.length-1); c.height=H+48;
+  const g=c.getContext("2d"); g.fillStyle="#111"; g.fillRect(0,0,c.width,c.height); let x=0;
+  (async()=>{ for(const p of parts){
+      g.drawImage(p.im,x,48,p.w,H);
+      const svg=$("svg-"+p.s).cloneNode(true); svg.setAttribute("xmlns",NS); svg.setAttribute("width",p.im.naturalWidth); svg.setAttribute("height",p.im.naturalHeight);
+      const url="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(new XMLSerializer().serializeToString(svg));
+      const ov=await new Promise(r=>{const i=new Image(); i.onload=()=>r(i); i.onerror=()=>r(null); i.src=url;});
+      if(ov) g.drawImage(ov,x,48,p.w,H);
+      g.fillStyle="#fff"; g.font="600 22px sans-serif"; g.fillText((p.s==="ref"?"기준 · ":"현재 · ")+S[p.s].label,x+12,32);
+      x+=p.w+20; }
+    c.toBlob(b=>download(`자세비교_${stamp()}.png`,b),"image/png");
+  })();
+};
+
+let tt; function toast(msg){ let t=document.querySelector(".toast"); if(!t){t=document.createElement("div");t.className="toast";t.setAttribute("role","status");document.body.appendChild(t);} t.textContent=msg; t.hidden=false; clearTimeout(tt); tt=setTimeout(()=>t.hidden=true,2600); }
+</script>
+</body>
+</html>
