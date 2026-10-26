@@ -85,6 +85,7 @@ button:disabled{opacity:.45;cursor:not-allowed}
 button:focus-visible,.filebtn:focus-within,select:focus-visible{outline:2px solid var(--hongsim);outline-offset:2px}
 .filebtn input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:0}
 .nojs{background:var(--hongsim);color:#fff;padding:14px 16px;border-radius:10px;font-size:14.5px;line-height:1.6}
+.pt-flag{fill:none;stroke:#ff9f1c;pointer-events:none}
 .status{font-size:13px;color:var(--hongsim);min-height:0}
 .small{font-size:13px;color:var(--muted)}
 .notes{color:var(--muted);font-size:13.5px;display:grid;gap:6px;max-width:80ch}
@@ -98,13 +99,13 @@ button:focus-visible,.filebtn:focus-within,select:focus-visible{outline:2px soli
   <section>
     <div class="eyebrow">국궁 · 만작 자세 비교</div>
     <h1>사대 자세 노트</h1>
-    <p class="lede">잘 맞던 때의 만작 자세를 기준으로, 지금 자세가 어디서 달라졌는지 숫자로 비교합니다. 영상과 사진은 이 컴퓨터의 브라우저 안에서만 열리고 인터넷으로 보내지지 않습니다.</p>
+    <p class="lede">잘 맞던 때의 만작 자세를 기준으로, 지금 자세가 어디서 달라졌는지 숫자로 비교합니다. 사진을 올리면 관절 위치를 자동으로 찾아 점을 찍어 주고, 틀린 점은 끌어서 고칠 수 있습니다. 자세 인식은 내 기기 안에서 돌아가며 영상과 사진은 인터넷으로 보내지지 않습니다.</p>
   </section>
 
   <ol class="steps">
     <li><b>같은 자리에서 촬영</b> 사대 옆, 가슴 정면 쪽에서 같은 높이로 찍은 두 영상을 준비합니다. 사대 앞에는 서지 마세요.</li>
     <li><b>장면 가져오기</b> 영상을 열고 만작 순간에 멈춘 뒤 ‘기준으로’ 또는 ‘현재로’를 누릅니다.</li>
-    <li><b>점 9개 찍기</b> 사진 아래 안내 순서대로 찍고, 잘못 찍은 점은 끌어서 고칩니다.</li>
+    <li><b>점 확인하기</b> 점 9개가 자동으로 찍힙니다. 주황 테두리 점은 자동 인식이 불확실한 곳이니 꼭 확인하고, 틀린 점은 끌어서 고칩니다.</li>
     <li><b>리듬 기록 (선택)</b> 영상을 재생하며 만작 시작, 발시, 줌손 내려감 버튼을 누릅니다.</li>
   </ol>
 
@@ -114,6 +115,7 @@ button:focus-visible,.filebtn:focus-within,select:focus-visible{outline:2px soli
       <label class="filebtn primary">영상 열기<input type="file" id="file" accept="video/*"></label>
       <span class="small" id="fname">열린 영상 없음</span>
     </div>
+    <div class="controls"><label class="small" for="mc">자동 인식 정밀도</label><select id="mc"><option value="2">정밀 (처음 약 30MB, 컴퓨터 추천)</option><option value="1">보통 (처음 약 10MB, 휴대폰 추천)</option><option value="0">빠름 (가장 가벼움)</option></select></div>
     <video id="video" controls playsinline hidden></video>
     <div class="controls" id="vctrl" hidden>
       <button id="back" type="button">◀ 1프레임</button><button id="fwd" type="button">1프레임 ▶</button>
@@ -148,7 +150,8 @@ button:focus-visible,.filebtn:focus-within,select:focus-visible{outline:2px soli
         <div class="hint" id="hint-ref"></div>
         <div class="pbar">
           <label class="filebtn">사진 열기<input type="file" accept="image/*" data-slot="ref" class="imgfile"></label>
-          <button type="button" data-redo="ref">점 다시 찍기</button>
+          <button type="button" data-auto="ref">자동으로 다시 찍기</button>
+          <button type="button" data-redo="ref">직접 찍기</button>
           <span class="status" id="status-ref" role="status"></span>
         </div>
       </article>
@@ -158,7 +161,8 @@ button:focus-visible,.filebtn:focus-within,select:focus-visible{outline:2px soli
         <div class="hint" id="hint-now"></div>
         <div class="pbar">
           <label class="filebtn">사진 열기<input type="file" accept="image/*" data-slot="now" class="imgfile"></label>
-          <button type="button" data-redo="now">점 다시 찍기</button>
+          <button type="button" data-auto="now">자동으로 다시 찍기</button>
+          <button type="button" data-redo="now">직접 찍기</button>
           <span class="status" id="status-now" role="status"></span>
         </div>
       </article>
@@ -173,7 +177,7 @@ button:focus-visible,.filebtn:focus-within,select:focus-visible{outline:2px soli
         <tbody id="tbody"></tbody>
       </table>
     </div>
-    <p class="small">길이 단위 “머리”는 귀에서 코끝까지의 거리입니다. 사진마다 촬영 거리가 달라도 비교할 수 있게 이 길이로 나눴습니다.</p>
+    <p class="small">길이 단위 “머리”는 귀에서 코끝까지의 거리입니다. 사진마다 촬영 거리가 달라도 비교할 수 있게 이 길이로 나눴습니다. 두 사진에서 얼굴을 돌린 정도가 다르면 이 단위가 달라져서 ‘머리’ 단위 항목은 오차가 커집니다. 각도(°) 항목이 더 믿을 만합니다.</p>
   </section>
 
   <section style="display:grid;gap:10px">
@@ -197,6 +201,7 @@ button:focus-visible,.filebtn:focus-within,select:focus-visible{outline:2px soli
     <p>카메라 한 대로 찍은 2D 사진이라 촬영 위치와 높이가 같아야 숫자를 비교할 수 있습니다.</p>
     <p>시위와 화살은 점으로 찍지 않으므로 시위와 볼·팔 사이의 실제 간격은 재지 않습니다. 사진을 눈으로 함께 보세요.</p>
     <p>판정 기준(허용 오차)은 손으로 점을 찍을 때 생기는 흔들림을 감안해 정한 값입니다. ‘달라짐’은 원인 후보를 짚어주는 것이지 잘잘못을 판정하는 것은 아닙니다. 지도자의 확인을 함께 받으세요.</p>
+    <p>자동 인식은 구글의 MediaPipe 자세 인식 모델을 이 브라우저에서 실행합니다. 턱끝은 모델이 찾는 점이 아니라 코와 입 위치로 추정하므로 항상 확인 표시가 붙습니다. 소매, 활, 다른 사람에 가린 관절은 틀릴 수 있습니다.</p>
     <p>오른손잡이(왼손에 활) 기준으로 설명이 쓰여 있습니다. 왼손잡이도 점은 같은 이름대로 찍으면 계산은 그대로 맞습니다.</p>
   </section>
 </div>
@@ -300,13 +305,15 @@ function draw(slot){
   for(const [k,label,grp] of KEYS){ const p=P(k); if(!p) continue;
     const c=document.createElementNS(NS,"circle"); c.setAttribute("cx",p[0]);c.setAttribute("cy",p[1]);c.setAttribute("r",r);
     c.setAttribute("fill",colorOf(grp)); c.setAttribute("stroke","#fff"); c.setAttribute("stroke-width",sw*.7);
-    c.classList.add("pt"); c.dataset.k=k; const t=document.createElementNS(NS,"title"); t.textContent=label; c.appendChild(t); svg.appendChild(c); }
+    c.classList.add("pt"); c.dataset.k=k; const t=document.createElementNS(NS,"title"); t.textContent=label+((s.flags||{})[k]?" (확인 필요)":""); c.appendChild(t);
+    if((s.flags||{})[k]){ const ring=document.createElementNS(NS,"circle"); ring.setAttribute("cx",p[0]);ring.setAttribute("cy",p[1]);ring.setAttribute("r",r*1.9);ring.setAttribute("stroke-width",sw*.9);ring.setAttribute("stroke-dasharray",`${sw*1.6} ${sw*1.2}`);ring.classList.add("pt-flag"); svg.appendChild(ring); }
+    svg.appendChild(c); }
 }
 function svgPoint(svg,e){ const pt=svg.createSVGPoint(); pt.x=e.clientX; pt.y=e.clientY; return pt.matrixTransform(svg.getScreenCTM().inverse()); }
 function hint(slot){ const h=$("hint-"+slot);
   if(!S[slot].img){ h.className="hint"; h.textContent=""; return; }
   if(picking[slot]!=null){ h.className="hint active"; h.textContent=`${picking[slot]+1}/9 · ${KEYS[picking[slot]][1]}을(를) 찍으세요`; }
-  else { h.className="hint"; h.textContent="점 9개를 모두 찍었습니다. 점을 끌어서 위치를 고칠 수 있습니다."; } }
+  else { const n=Object.keys(S[slot].flags||{}).length; h.className=n?"hint active":"hint"; h.textContent= n?`자동으로 찍었습니다. 주황 테두리 점 ${n}개는 인식이 불확실하니 확인하고, 틀리면 끌어서 고치세요.`:"점 9개가 모두 있습니다. 점을 끌어서 위치를 고칠 수 있습니다."; } }
 function bind(slot){
   const svg=$("svg-"+slot), im=$("img-"+slot), stage=$("stage-"+slot); let drag=null;
   svg.addEventListener("pointerdown",e=>{
@@ -319,7 +326,8 @@ function bind(slot){
       hint(slot); draw(slot); render(); }
   });
   svg.addEventListener("pointermove",e=>{ if(!drag) return; const q=svgPoint(svg,e);
-    S[slot].pts[drag]=[Math.max(0,Math.min(1,q.x/im.naturalWidth)),Math.max(0,Math.min(1,q.y/im.naturalHeight))]; draw(slot); render(); });
+    S[slot].pts[drag]=[Math.max(0,Math.min(1,q.x/im.naturalWidth)),Math.max(0,Math.min(1,q.y/im.naturalHeight))]; if(S[slot].flags) delete S[slot].flags[drag]; draw(slot); render(); });
+  svg.addEventListener("pointerup",()=>{ if(drag) hint(slot); });
   const end=()=>{drag=null}; svg.addEventListener("pointerup",end); svg.addEventListener("pointercancel",end);
   im.addEventListener("load",()=>{ draw(slot); render(); });
 }
@@ -327,7 +335,9 @@ function setImage(slot,dataUrl,label,pts){
   S[slot].img=dataUrl; S[slot].label=label; S[slot].pts=pts||{};
   $("title-"+slot).textContent=label; $("empty-"+slot).hidden=true;
   const im=$("img-"+slot); im.hidden=false; im.src=dataUrl;
-  picking[slot]=nextMissing(slot); $("stage-"+slot).classList.toggle("picking",picking[slot]!=null); hint(slot);
+  S[slot].flags={};
+  if(pts){ picking[slot]=nextMissing(slot); $("stage-"+slot).classList.toggle("picking",picking[slot]!=null); hint(slot); }
+  else { picking[slot]=null; hint(slot); autoDetect(slot); }
 }
 for(const slot of ["ref","now"]){ bind(slot); hint(slot); }
 render();
@@ -391,15 +401,79 @@ document.querySelectorAll(".imgfile").forEach(inp=>inp.addEventListener("change"
 }));
 document.querySelectorAll("[data-redo]").forEach(b=>b.addEventListener("click",()=>{
   const slot=b.dataset.redo; if(!S[slot].img){ toast("먼저 사진을 불러오세요."); return; }
-  S[slot].pts={}; picking[slot]=0; $("stage-"+slot).classList.add("picking"); hint(slot); draw(slot); render();
+  S[slot].pts={}; S[slot].flags={}; picking[slot]=0; $("stage-"+slot).classList.add("picking"); hint(slot); draw(slot); render();
 }));
+document.querySelectorAll("[data-auto]").forEach(b=>b.addEventListener("click",()=>{
+  const slot=b.dataset.auto; if(!S[slot].img){ toast("먼저 사진을 불러오세요."); return; } autoDetect(slot);
+}));
+
+/* ---------- automatic pose detection (MediaPipe Pose, runs in this browser) ---------- */
+const MP_VER="0.5.1675469404", MP_BASE=`https://cdn.jsdelivr.net/npm/@mediapipe/pose@${MP_VER}/`;
+try{ $("mc").value = (matchMedia("(pointer:coarse)").matches || innerWidth<700) ? "1" : "2"; }catch(e){}
+let poseP=null, poseMC=null, poseQueue=Promise.resolve();
+function getPose(){
+  if(!poseP){
+    poseP=(async()=>{
+      if(!window.Pose) await loadScript(MP_BASE+"pose.js");
+      const p=new window.Pose({locateFile:f=>MP_BASE+f});
+      return p;
+    })();
+    poseP.catch(()=>{poseP=null;});
+  }
+  return poseP;
+}
+function runPose(img){
+  // MediaPipe handles one image at a time: queue requests
+  const job=poseQueue.then(async()=>{
+    const p=await getPose(); const mc=+$("mc").value;
+    if(mc!==poseMC){ p.setOptions({modelComplexity:mc,staticImageMode:true,smoothLandmarks:false,minDetectionConfidence:.3}); poseMC=mc; }
+    return await new Promise((res,rej)=>{ p.onResults(r=>res(r)); p.send({image:img}).catch(rej); });
+  });
+  poseQueue=job.catch(()=>{}); return job;
+}
+function mapPose(lm,W,H){
+  const P=i=>[lm[i].x,lm[i].y], V=i=>lm[i].visibility??1;
+  const dist=(a,b)=>Math.hypot((lm[a].x-lm[b].x)*W,(lm[a].y-lm[b].y)*H);
+  // the bow arm is the extended one: wrist farther from its shoulder
+  const bowLeft = dist(15,11) >= dist(16,12);
+  const B = bowLeft ? {sh:11,el:13,wr:15,idx:19,th:21} : {sh:12,el:14,wr:16,idx:20,th:22};
+  const D = bowLeft ? {sh:12,el:14,wr:16,idx:20,th:22,ear:8,ear2:7} : {sh:11,el:13,wr:15,idx:19,th:21,ear:7,ear2:8};
+  const avg=(...ps)=>[ps.reduce((a,p)=>a+p[0],0)/ps.length, ps.reduce((a,p)=>a+p[1],0)/ps.length];
+  const ear = V(D.ear)>=V(D.ear2)-.15 ? D.ear : D.ear2;
+  const mouth=avg(P(9),P(10)), nose=P(0);
+  const chin=[mouth[0]+(mouth[0]-nose[0])*0.65, mouth[1]+(mouth[1]-nose[1])*0.65];
+  const pts={ nose, chin, ear:P(ear), dHand:P(D.th), dElbow:P(D.el), dSh:P(D.sh), bSh:P(B.sh), bElbow:P(B.el), bHand:avg(P(B.idx),P(B.th)) };
+  const lowv=.65, flags={ chin:"추정" };
+  const src={nose:[0],ear:[ear],dHand:[D.th,D.wr],dElbow:[D.el],dSh:[D.sh],bSh:[B.sh],bElbow:[B.el],bHand:[B.idx,B.th,B.wr]};
+  for(const k in src) if(Math.min(...src[k].map(V))<lowv) flags[k]="낮음";
+  for(const k in pts) pts[k]=[Math.max(0,Math.min(1,pts[k][0])),Math.max(0,Math.min(1,pts[k][1]))];
+  return {pts,flags};
+}
+async function autoDetect(slot){
+  const st=$("status-"+slot), im=$("img-"+slot), stage=$("stage-"+slot);
+  st.textContent = window.Pose ? "자세를 인식하는 중…" : "자동 인식 모델을 내려받는 중… (처음 한 번만)";
+  try{
+    if(!im.complete || !im.naturalWidth) await im.decode();
+    const want=S[slot].img;
+    const r=await runPose(im);
+    if(S[slot].img!==want) return;            // a newer image replaced this one
+    if(!r.poseLandmarks){ throw new Error("사람을 찾지 못했습니다. 상체가 크게 나온 장면을 쓰거나 ‘직접 찍기’로 점을 찍어 주세요."); }
+    const {pts,flags}=mapPose(r.poseLandmarks,im.naturalWidth,im.naturalHeight);
+    S[slot].pts=pts; S[slot].flags=flags; picking[slot]=null; stage.classList.remove("picking");
+    st.textContent=""; hint(slot); draw(slot); render();
+  }catch(e){
+    const msg = (e&&e.message&&!/^\[?object/.test(e.message)) ? e.message : "자동 인식을 쓸 수 없습니다(인터넷 연결 필요). 안내 순서대로 직접 찍어 주세요.";
+    st.textContent=msg; S[slot].pts={}; S[slot].flags={}; picking[slot]=0; stage.classList.add("picking"); hint(slot); draw(slot); render();
+  }
+}
+$("mc").addEventListener("change",()=>{ for(const s of ["ref","now"]) if(S[s].img) autoDetect(s); });
 
 /* ---------- save / load ---------- */
 function download(name,blob){ const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1000); }
 const stamp=()=>new Date().toISOString().slice(0,10);
 function saveJSON(slots){
   const out={app:"사대 자세 노트",version:1,saved:new Date().toISOString(),slots:{}};
-  for(const s of slots){ if(S[s].img) out.slots[s]={label:S[s].label,img:S[s].img,pts:S[s].pts,time:S[s].time}; }
+  for(const s of slots){ if(S[s].img) out.slots[s]={label:S[s].label,img:S[s].img,pts:S[s].pts,flags:S[s].flags||{},time:S[s].time}; }
   if(!Object.keys(out.slots).length){ toast("저장할 장면이 없습니다."); return; }
   download(`자세기록_${slots.length===1?"기준_":""}${stamp()}.json`, new Blob([JSON.stringify(out)],{type:"application/json"}));
   toast("기록을 저장했습니다.");
@@ -409,7 +483,7 @@ $("save-ref").onclick=()=>saveJSON(["ref"]);
 $("load").addEventListener("change",e=>{
   const f=e.target.files[0]; if(!f) return;
   f.text().then(t=>{ const d=JSON.parse(t); if(!d.slots) throw 0;
-    for(const s of ["ref","now"]){ const v=d.slots[s]; if(!v) continue; setImage(s,v.img,v.label,v.pts); S[s].time=v.time||{hold:null,follow:null}; }
+    for(const s of ["ref","now"]){ const v=d.slots[s]; if(!v) continue; setImage(s,v.img,v.label,v.pts||{}); S[s].flags=v.flags||{}; S[s].time=v.time||{hold:null,follow:null}; hint(s); draw(s); }
     renderTiming(); toast("기록을 불러왔습니다.");
   }).catch(()=>toast("이 파일은 사대 자세 노트 기록이 아닙니다."));
   e.target.value="";
